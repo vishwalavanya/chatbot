@@ -20,6 +20,7 @@ app.use(express.json());
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
 console.log("🔐 Loaded OpenRouter key:", OPENROUTER_KEY ? "[FOUND]" : "[MISSING]");
+console.log("🔐 Key preview:", OPENROUTER_KEY?.slice(0, 10)); 
 
 
 app.post("/chat", async (req, res) => {
