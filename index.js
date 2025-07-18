@@ -20,12 +20,20 @@ app.post("/chat", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "openchat/openchat-3.5-0106", // You can change this model
+        model: "openchat/openchat-3.5-0106", // or "openai/gpt-3.5-turbo"
         messages
       })
     });
 
     const data = await response.json();
+
+    if (!response.ok) {
+      console.error("❌ OpenRouter API returned an error:", data);
+      return res.status(response.status).json({ error: data });
+    }
+
+    console.log("📦 OpenRouter API response:", data);
+
     res.json(data);
   } catch (err) {
     console.error("❌ Error with OpenRouter:", err);
@@ -40,3 +48,4 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("🚀 Server running on port 3000");
 });
+
