@@ -4,33 +4,26 @@ import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
-dotenv.config(); // Load .env file
+dotenv.config(); // Load .env
 
 const app = express();
-
-// ✅ Proper CORS for all origins (for testing)
-app.use(cors({
-  origin: "*", // Allow all for now
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"]
-}));
-
+app.use(cors({ origin: "*", methods: ["POST", "GET"], allowedHeaders: ["Content-Type"] }));
 app.use(express.json());
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
-console.log("🔐 Loaded OpenRouter key:", OPENROUTER_KEY ? "[FOUND]" : "[MISSING]");
-console.log("🔐 Key preview:", OPENROUTER_KEY?.slice(0, 10)); 
-
 
 app.post("/chat", async (req, res) => {
   const { messages } = req.body;
+
+  // 🛡️ Log to verify
+  console.log("🔐 OpenRouter key preview:", OPENROUTER_KEY?.slice(0, 10));
 
   try {
     const response = await fetch(OPENROUTER_API, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_KEY.trim()}`,
+        "Authorization": `Bearer ${OPENROUTER_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -40,22 +33,27 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log("✅ OpenRouter response:", data);
-    res.json(data);
+
+    // 🧠 DEBUG: Print full response
+    console.log("🚀 Full OpenRouter response:", data);
+
+    // ✅ Safely extract response
+    const botReply = data?.choices?.[0]?.message?.content || "⚠️ No valid message in response";
+    res.json({ reply: botReply });
   } catch (err) {
     console.error("❌ OpenRouter error:", err);
-    res.status(500).json({ error: "Chatbot backend failed" });
+    res.status(500).json({ error: "Chatbot failed to respond" });
   }
 });
 
-// Root route to test Render app is alive
 app.get("/", (req, res) => {
-  res.send("🤖 OpenRouter backend is running");
+  res.send("🤖 Chatbot is live");
 });
 
 app.listen(3000, () => {
-  console.log("🚀 Backend running on port 3000");
+  console.log("🚀 Server running on port 3000");
 });
+
 
 
 
