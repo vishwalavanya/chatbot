@@ -7,7 +7,8 @@ app.use(cors());
 app.use(express.json());
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
-const OPENROUTER_KEY = "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";
+const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
+
 
 app.post("/chat", async (req, res) => {
   const { messages } = req.body;
