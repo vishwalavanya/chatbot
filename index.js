@@ -1,21 +1,24 @@
+// index.js
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
-dotenv.config(); // Load environment variables
+dotenv.config(); // Load .env file
 
 const app = express();
-app.use(cors());
+
+// ✅ Proper CORS for all origins (for testing)
+app.use(cors({
+  origin: "*", // Allow all for now
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"]
+}));
+
 app.use(express.json());
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
 const OPENROUTER_KEY = process.env.OPENROUTER_KEY;
-
-if (!OPENROUTER_KEY) {
-  console.error("❌ Missing OPENROUTER_KEY. Please set it in Render environment.");
-  process.exit(1);
-}
 
 app.post("/chat", async (req, res) => {
   const { messages } = req.body;
@@ -34,21 +37,23 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log("🤖 Response from OpenRouter:", data);
+    console.log("✅ OpenRouter response:", data);
     res.json(data);
   } catch (err) {
-    console.error("❌ Error with OpenRouter:", err);
-    res.status(500).json({ error: "Failed to connect to OpenRouter" });
+    console.error("❌ OpenRouter error:", err);
+    res.status(500).json({ error: "Chatbot backend failed" });
   }
 });
 
+// Root route to test Render app is alive
 app.get("/", (req, res) => {
-  res.send("🤖 OpenRouter Chatbot API is live");
+  res.send("🤖 OpenRouter backend is running");
 });
 
 app.listen(3000, () => {
-  console.log("🚀 Server running on port 3000");
+  console.log("🚀 Backend running on port 3000");
 });
+
 
 
 
