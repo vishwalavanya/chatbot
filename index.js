@@ -4,28 +4,23 @@ import cors from "cors";
 import fetch from "node-fetch";
 import dotenv from "dotenv";
 
-dotenv.config(); // ✅ Load environment variables from .env
+dotenv.config(); // Load env variables from .env file
 
 const app = express();
-
-// ✅ CORS: Allow all origins (development-safe)
-app.use(cors({
-  origin: "*",
-  methods: ["POST", "GET"],
-  allowedHeaders: ["Content-Type"]
-}));
-
+app.use(cors({ origin: "*", methods: ["POST", "GET"], allowedHeaders: ["Content-Type"] }));
 app.use(express.json());
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
-const OPENROUTER_KEY = process.env.OPENROUTER_KEY?.trim(); // ✅ Avoid accidental space/linebreak
+const OPENROUTER_KEY = process.env.OPENROUTER_KEY?.trim(); // Avoid trailing line breaks
 
-// ✅ POST endpoint to handle user chat
 app.post("/chat", async (req, res) => {
   const { messages } = req.body;
 
-  console.log("🔐 Loaded OpenRouter key:", OPENROUTER_KEY ? "[FOUND]" : "[MISSING]");
-  console.log("📝 Incoming messages:", messages);
+  if (!OPENROUTER_KEY) {
+    return res.status(500).json({ error: "Missing API key" });
+  }
+
+  console.log("🟢 Received:", messages);
 
   try {
     const response = await fetch(OPENROUTER_API, {
@@ -41,25 +36,24 @@ app.post("/chat", async (req, res) => {
     });
 
     const data = await response.json();
-    console.log("🚀 Full OpenRouter response:", data);
+    console.log("🧠 OpenRouter raw response:", data);
 
-    const botReply = data?.choices?.[0]?.message?.content || "⚠️ No valid message in response";
-    res.json({ reply: botReply });
-  } catch (err) {
-    console.error("❌ OpenRouter error:", err);
+    const reply = data?.choices?.[0]?.message?.content || "⚠️ No valid message in response";
+    res.json({ reply });
+  } catch (error) {
+    console.error("❌ Chatbot error:", error);
     res.status(500).json({ error: "Chatbot failed to respond" });
   }
 });
 
-// ✅ Basic GET route
 app.get("/", (req, res) => {
-  res.send("🤖 Chatbot is live");
+  res.send("🤖 OpenRouter Chatbot is live");
 });
 
-// ✅ Start server
 app.listen(3000, () => {
   console.log("🚀 Server running on port 3000");
 });
+
 
 
 
